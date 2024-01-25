@@ -24,7 +24,8 @@ def transfer_obs(obs):
         "lidar_data": trans_to_float(lidar_data),
         "relative_coordinates": trans_to_float(round_to_decimal_places(
                                             [target_pos[0]-car_pos[0],target_pos[1]-car_pos[1]])
-                                            )
+                                            ),
+        "angle_diff": float(angle_diff)
     }
     
     return state_dict

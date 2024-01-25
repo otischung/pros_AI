@@ -66,6 +66,7 @@ class AI_node(Node):
     #  檢查所有的數據是否更新
     def check_and_get_lastest_data(self):
         '''將訊息轉換成跟虛擬環境的python一樣的格式'''
+        # print(self.data_updated.values())
         if all(self.data_updated.values()):
             # 確認所有的數據都更新並publish
             self.data_updated['amcl'] = False
@@ -154,7 +155,7 @@ class AI_node(Node):
         direction_180 = []
         all_ranges = msg.ranges
         for i in range(len(all_ranges)):
-            if i % 20 == 0:  # handle the amount of lidar.
+            if i % 36 == 0:  # handle the amount of lidar.
                 angle_tmp = angle_min + i * angle_increment
                 ranges_180.append(all_ranges[i])
                 direction_180.append([math.cos(angle_tmp), math.sin(angle_tmp), 0])
