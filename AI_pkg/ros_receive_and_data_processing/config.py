@@ -9,18 +9,16 @@ vel = 20.0
 rotate_vel = 5.0
 
 ACTION_MAPPINGS = {
-    "FORWARD": [vel, vel, vel, vel],  # 前進
-    "LEFT_FRONT": [rotate_vel, rotate_vel * 1.2, rotate_vel, rotate_vel * 1.2],  # 左前
+    "FORWARD": [vel, vel],  # 前進
+    "LEFT_FRONT": [rotate_vel, rotate_vel * 1.2],  # 左前
     "COUNTERCLOCKWISE_ROTATION": [
         -rotate_vel,
         rotate_vel,
-        -rotate_vel,
-        rotate_vel,
     ],  # 左自轉
-    "BACKWARD": [-vel, -vel, -vel, -vel],  # 後退
-    "CLOCKWISE_ROTATION": [rotate_vel, -rotate_vel, rotate_vel, -rotate_vel],  # 右自轉
-    "RIGHT_FRONT": [rotate_vel * 1.2, rotate_vel, rotate_vel * 1.2, rotate_vel],  # 右前
-    "STOP": [0.0, 0.0, 0.0, 0.0],
+    "BACKWARD": [-vel, -vel],  # 後退
+    "CLOCKWISE_ROTATION": [rotate_vel, -rotate_vel],  # 右自轉
+    "RIGHT_FRONT": [rotate_vel * 1.2, rotate_vel],  # 右前
+    "STOP": [0.0, 0.0],
 }
 
 """

@@ -35,11 +35,11 @@ class AI_node(Node):
         self.real_car_data["ROS2CarQuaternion"] = []
         self.real_car_data["ROS2TargetPosition"] = []
 
-        #  讀取四輪電壓
-        self.real_car_data["ROS2WheelAngularVelocityLeftBack"] = 0.01
-        self.real_car_data["ROS2WheelAngularVelocityLeftFront"] = 0.01
-        self.real_car_data["ROS2WheelAngularVelocityRightBack"] = 0.01
-        self.real_car_data["ROS2WheelAngularVelocityRightFront"] = 0.01
+        # #  讀取四輪電壓
+        # self.real_car_data["ROS2WheelAngularVelocityLeftBack"] = 0.01
+        # self.real_car_data["ROS2WheelAngularVelocityLeftFront"] = 0.01
+        # self.real_car_data["ROS2WheelAngularVelocityRightBack"] = 0.01
+        # self.real_car_data["ROS2WheelAngularVelocityRightFront"] = 0.01
 
         #  lidar的射線
         self.real_car_data["ROS2Range"] = []
@@ -80,25 +80,25 @@ class AI_node(Node):
         self.subscriber_lidar = self.create_subscription(
             LaserScan, "/scan", self.laser_scan_callback, 1
         )
-        """
-        車體後輪電壓
-        """
-        self.subscriber_rear = self.create_subscription(
-            String, DeviceDataTypeEnum.car_C_state, self.rear_wheel_callback, 1
-        )
-        """
-        車體前輪電壓
-        """
-        self.subscriber_forward = self.create_subscription(
-            String, DeviceDataTypeEnum.car_C_state_front, self.forward_wheel_callback, 1
-        )
+        # """
+        # 車體後輪電壓
+        # """
+        # self.subscriber_rear = self.create_subscription(
+        #     String, DeviceDataTypeEnum.car_B_control, self.rear_wheel_callback, 1
+        # )
+        # """
+        # 車體前輪電壓
+        # """
+        # self.subscriber_wheel = self.create_subscription(
+        #     String, DeviceDataTypeEnum.car_B_control, self.wheel_callback, 1
+        # )
 
         """
         publish給前後的esp32驅動車輪
         """
-        self.publisher = self.create_publisher(String, DeviceDataTypeEnum.car_C_rear_wheel, 10)  # 後輪esp32
+        self.publisher = self.create_publisher(String, DeviceDataTypeEnum.car_B_control, 10)  # 後輪esp32
 
-        self.publisher_forward = self.create_publisher(String, DeviceDataTypeEnum.car_C_front_wheel, 10)  # 前輪esp32
+        # self.publisher_forward = self.create_publisher(String, DeviceDataTypeEnum.car_B_control, 10)  # 前輪esp32
 
         """
         機械手臂
@@ -155,12 +155,14 @@ class AI_node(Node):
 
     def publish_control_signal(self, velocities: List[float], publisher):
         control_signal = {
-            "type": str(DeviceDataTypeEnum.car_C_rear_wheel),
-            "data": dict(CarCControl(target_vel=velocities)),
+            "type": str(DeviceDataTypeEnum.car_B_control),
+            "data": dict(CarBControl(target_vel=velocities)),
         }
         control_msg = String()
         control_msg.data = orjson.dumps(control_signal).decode()
         publisher.publish(control_msg)
+        # time.sleep(300)
+
 
     """
     Publish vehicle control signals to robot.
@@ -172,16 +174,16 @@ class AI_node(Node):
 
     def publish_to_robot(self, action, pid_control: bool = True):
         if pid_control:
-            _vel1, _vel2, _vel3, _vel4 = action
+            _vel1, _vel2 = action
         else:
             mapped_action = ACTION_MAPPINGS.get(
-                action, [0, 0, 0, 0]
+                action, [0, 0]
             )  # Default to stop if action is invalid
-            _vel1, _vel2, _vel3, _vel4 = mapped_action
-        velocities_front = [_vel1, _vel2]  # 前面的esp32
-        velocities_back = [_vel3, _vel4]  # 後面的esp32
-        self.publish_control_signal(velocities_front, self.publisher)
-        self.publish_control_signal(velocities_back, self.publisher_forward)
+            _vel1, _vel2 = mapped_action
+        velocities = [_vel1, _vel2]  # 前面的esp32
+        print("velocity : ", velocities)
+        self.publish_control_signal(velocities, self.publisher)
+        # self.publish_control_signal(velocities_back, self.publisher_forward)
 
     def publish_arm(self, joint_pos):
         msg = JointTrajectoryPoint()
@@ -332,38 +334,39 @@ class AI_node(Node):
         current_time = time.time()
         if current_time - self.last_message_time > timeout:
             self.publish_to_robot_reset()
+            print("checck")
             return True
 
     """
     接收後輪的電壓 subscribe function
     """
 
-    def rear_wheel_callback(self, message):
-        try:
-            json_str = message.data
-            data = json.loads(json_str)
-            if "data" in data and "vels" in data["data"]:
-                vels = data["data"]["vels"]
-                self.real_car_data["ROS2WheelAngularVelocityLeftBack"] = vels[0]
-                self.real_car_data["ROS2WheelAngularVelocityRightBack"] = vels[1]
-            else:
-                print("Invalid message format. Missing 'vels' key.")
-        except json.JSONDecodeError as e:
-            print(f"Error decoding JSON: {e}")
+    # def rear_wheel_callback(self, message):
+    #     try:
+    #         json_str = message.data
+    #         data = json.loads(json_str)
+    #         if "data" in data and "vels" in data["data"]:
+    #             vels = data["data"]["vels"]
+    #             self.real_car_data["ROS2WheelAngularVelocityLeftBack"] = vels[0]
+    #             self.real_car_data["ROS2WheelAngularVelocityRightBack"] = vels[1]
+    #         else:
+    #             print("Invalid message format. Missing 'vels' key.")
+    #     except json.JSONDecodeError as e:
+    #         print(f"Error decoding JSON: {e}")
 
     """
     接收前輪的電壓 subscribe function
     """
 
-    def forward_wheel_callback(self, message):
-        try:
-            json_str = message.data
-            data = json.loads(json_str)
-            if "data" in data and "vels" in data["data"]:
-                vels = data["data"]["vels"]
-                self.real_car_data["ROS2WheelAngularVelocityLeftFront"] = vels[0]
-                self.real_car_data["ROS2WheelAngularVelocityRightFront"] = vels[1]
-            else:
-                print("Invalid message format. Missing 'vels' key.")
-        except json.JSONDecodeError as e:
-            print(f"Error decoding JSON: {e}")
+    # def wheel_callback(self, message):
+    #     try:
+    #         json_str = message.data
+    #         data = json.loads(json_str)
+    #         if "data" in data and "vels" in data["data"]:
+    #             vels = data["data"]["target_vel"]
+    #             self.real_car_data["ROS2WheelAngularVelocityLeftFront"] = vels[0]
+    #             self.real_car_data["ROS2WheelAngularVelocityRightFront"] = vels[1]
+    #         else:
+    #             print("Invalid message format. Missing 'vels' key.")
+    #     except json.JSONDecodeError as e:
+    #         print(f"Error decoding JSON: {e}")

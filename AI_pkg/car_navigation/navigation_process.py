@@ -4,7 +4,7 @@ import threading
 from robot_arm.robot_control import RobotArmControl
 from csv_store_and_file.csv_store import DataCollector
 from ros_receive_and_data_processing.config import TARGET_DISTANCE
-
+import time
 
 class NavigationProcess:
     def __init__(self, node):
@@ -30,6 +30,7 @@ class NavigationProcess:
         received_global_plan = car_data["received_global_plan"]
         car_position = car_data["car_pos"][:2]
         pid_left, pid_right = calculate_wheel_speeds(car_data["cmd_vel_nav"])
+        # print("pid_left, pid_right : ", pid_left, pid_right)
         return received_global_plan, car_position, pid_left, pid_right
 
     # 到達終點時要做的事
@@ -58,7 +59,7 @@ class NavigationProcess:
         # 將數值傳送至PID控制器
         if stop_signal is not True:
             self.node.publish_to_robot(
-                [pid_left, pid_right, pid_left, pid_right],
+                [pid_left, pid_right],
                 pid_control=True,
             )
         else:
@@ -67,6 +68,7 @@ class NavigationProcess:
             """
             if received_global_plan == None:
                 action = "STOP"
+                # print("enter stop area")
                 self.node.publish_to_robot(action, pid_control=False)
             else:
                 """

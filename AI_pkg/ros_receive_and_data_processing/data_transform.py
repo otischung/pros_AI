@@ -12,10 +12,10 @@ def preprocess_data(obs):
     target_pos = obs["ROS2TargetPosition"][:2]
     car_quaternion = obs["ROS2CarQuaternion"][2:4]
     lidar_data = obs["ROS2Range"]
-    left_front_speed = obs["ROS2WheelAngularVelocityLeftFront"]
-    right_front_speed = obs["ROS2WheelAngularVelocityRightFront"]
-    left_back_speed = obs["ROS2WheelAngularVelocityLeftBack"]
-    right_back_speed = obs["ROS2WheelAngularVelocityRightBack"]
+    # left_front_speed = obs["ROS2WheelAngularVelocityLeftFront"]
+    # right_front_speed = obs["ROS2WheelAngularVelocityRightFront"]
+    # left_back_speed = obs["ROS2WheelAngularVelocityLeftBack"]
+    # right_back_speed = obs["ROS2WheelAngularVelocityRightBack"]
 
     angle_diff = calculate_angle_point(  #  輸出面向目標角度
         car_quaternion[0], car_quaternion[1], car_pos, target_pos
