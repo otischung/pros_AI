@@ -162,6 +162,16 @@ class AI_node(Node):
         control_msg.data = orjson.dumps(control_signal).decode()
         publisher.publish(control_msg)
 
+    def publish_control_signal_forward(self, velocities: List[float], publisher):
+        control_signal = {
+            "type": str(DeviceDataTypeEnum.car_C_front_wheel),
+            "data": dict(CarCControl(target_vel=velocities)),
+        }
+        control_msg = String()
+        control_msg.data = orjson.dumps(control_signal).decode()
+        publisher.publish(control_msg)
+
+
     """
     Publish vehicle control signals to robot.
 
@@ -180,8 +190,8 @@ class AI_node(Node):
             _vel1, _vel2, _vel3, _vel4 = mapped_action
         velocities_front = [_vel1, _vel2]  # 前面的esp32
         velocities_back = [_vel3, _vel4]  # 後面的esp32
-        self.publish_control_signal(velocities_front, self.publisher)
-        self.publish_control_signal(velocities_back, self.publisher_forward)
+        self.publish_control_signal(velocities_back, self.publisher)
+        self.publish_control_signal_forward(velocities_front, self.publisher_forward)
 
     def publish_arm(self, joint_pos):
         msg = JointTrajectoryPoint()
